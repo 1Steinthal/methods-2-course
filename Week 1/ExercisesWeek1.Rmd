@@ -1,0 +1,189 @@
+---
+title: "220202-Week1Exercises"
+author: "Thomas Steinthal"
+date: "2/2/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(tidyverse, car, MASS, lmtest, tseries, ggfortify)
+```
+
+1. Do exercise 1.2 in the book
+Sketching a regression model and data: Figure 1.1b shows data corresponding to the fitted line
+y = 46.3 + 3.0x with residual standard deviation 3.9, and values of x ranging roughly from 0 to
+4%.
+(a) Sketch hypothetical data with the same range of x but corresponding to the line y = 30 + 10x
+with residual standard deviation 3.9.
+
+
+```{r}
+set.seed(1234)
+
+x1 <- rnorm(17, 2, 2/3)
+error <- rnorm(17, 0, 3.9)
+
+y1 <- 30 + 10*x1 + error
+
+m1=lm(y1~x1)
+summary(m1)
+
+plot(x1,y1)+abline(30, 10)
+```
+
+
+(b) Sketch hypothetical data with the same range of x but corresponding to the line y = 30 + 10x
+with residual standard deviation 10.
+
+```{r}
+set.seed(1234)
+
+x2 <- rnorm(17, 2, 2/3)
+error_b <- rnorm(17, 0, 10)
+
+y2 <- 30 + 10*x2 + error_b
+
+m2=lm(y2~x2)
+summary(m2)
+
+plot(x2,y2)+abline(30, 10)
+```
+
+
+```{r}
+df <- read_csv("oscars.csv")
+
+summary(df)
+hist(df$Nom)
+```
+
+```{r}
+wine <- read_csv("winequality.csv")
+wine <- wine %>% 
+  rename(
+    fixacid = `fixed acidity`,
+    volacid = `volatile acidity`,
+    citacid = `citric acid`,
+    ressug = `residual sugar`,
+    fresuldio = `free sulfur dioxide`
+  )
+
+wine <- wine %>% 
+  na.omit(wine)
+
+#Overall data-inspection
+ggplot(wine,aes(x=fixacid,y=ressug,colour=quality))+geom_point()+geom_smooth(method=lm,se=FALSE)+labs(title="Data Inspection")
+
+# Basic statistical info of the angle variable, which looks skewed
+summary(wine)
+
+
+
+#Final boxplot to 
+boxplot(fixacid ~ ressug,
+          col=c("white","lightgray"),wine)
+
+
+
+```
+
+```{r}
+m1<- lm(quality ~ fixacid,data=wine)
+m2<- lm(quality ~ ressug, data=wine)
+m3<- lm(quality ~ alcohol, data=wine)
+m4<- lm(quality ~ alcohol*pH, data=wine)
+
+AIC(m1,m2,m3,m4)
+```
+m4 is found to be the best model
+
+
+
+```{r}
+#Making a random split of the data
+pacman::p_load(caret)
+set.seed(340)
+trainIndex <- createDataPartition(wine$quality,
+                                  p = .8, #we create a partition with 60%
+                                  list = FALSE, #not a list but a data.frame
+                                  times = 1) #Times we split = 1 time. 
+Train <- wine[trainIndex,] #We subset iris_subset by our indexing variable trainIndex
+Test <- wine[-trainIndex,] #Everything that is not in our trainIndex/Train will be in Test.
+```
+
+```{r}
+#Train the model on our Train data set.
+model_train <- lm(quality ~ alcohol*pH, data = Train)
+```
+
+```{r}
+#Predict based on your trained model and Test df partition. type = "reponse" because we're working with logistic regression. This changes the outcome to be probabilities and not log-odds. 
+Test$y_hat_prop <-  predict(model_train, Test, type = "response")
+
+Test %>% 
+  summarise(y_hat_prop, quality)
+```
+
+
+All in all (even though there maybe should have been put more theoretical work into it, I have now found a model that is able to predict the quality of the wine based on the interactive predictors, alcohol and pH (as I assume them to interact)).
+
+
+
+###Exercise 2.3
+
+```{r}
+pacman::p_load(stringi)
+
+nam <- read_csv('allnames_clean.csv')
+
+nam<- nam %>% 
+  subset(sex == "F")
+nam<- nam %>%  mutate(
+  laslet = stri_sub(name,-1)
+)
+
+
+namsor<- nam %>% 
+  group_by(laslet) %>% 
+  summarise_at(vars(X1880:X2010), sum, na.rm = TRUE)
+
+
+longnam<- namsor %>% 
+  pivot_longer(
+    cols = X1880:X2010
+  )
+
+```
+
+
+
+```{r}
+pacman::p_load(data.table)
+
+# flip datafram
+  t_namsor <- transpose(namsor)
+
+# get row and colnames in order
+  colnames(t_namsor) <- rownames(namsor)
+  rownames(t_namsor) <- colnames(namsor)
+  
+# Remove first row
+  t_namsor = t_namsor[-c(1),]
+  
+#plot
+  matplot(t_namsor,type=c("l"),pch=1,col=1:26,lty= 1:26,xlab="Years from 1880", ylab="Number of names given")
+  #for legends plot together with this
+  legend("topleft", legend = 1:26, col=1:26,pch=1,title='Last letter of name')
+  
+ #By googling I find this way of doing stuff 
+nn <- ncol(t_namsor)
+layout(matrix(c(1,2),nrow=1), width=c(4,1)) 
+par(mar=c(5,4,4,0)) #No margin on the right side
+  matplot(t_namsor,type=c("l"),pch=1,col=1:26,lty= 1:26,xlab="Years from 1880", ylab="Number of names given")
+par(mar=c(5,0,4,2)) #No margin on the left side
+plot(c(0,1),type="n", axes=F, xlab="", ylab="")
+legend("center", colnames(t_namsor),col=seq_len(nn),cex=0.5,fill=seq_len(nn),title='Last letter')
+```
+
