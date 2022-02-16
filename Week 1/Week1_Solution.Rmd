@@ -93,7 +93,7 @@ ggplot(sim1, aes(x = x, y = y)) + geom_point() + geom_abline(intercept = 46.3, s
 
 ### Exercise 2.3
 ```{r}
-names <- read_csv("C:/Users/Bruger/OneDrive - Aarhus Universitet/Skrivebord/methods-2-course/Data for the book/Names/data/allnames_clean.csv")
+names <- read_csv("allnames_clean.csv")
 ```
 
 

@@ -17,4 +17,13 @@ $$
 
 1. Prove that $f(x) = \beta x$ is linear.
 
+If $$
+f(ax_1 + bx_2) = af(x_1) + bf(x_2)
+$$ is linear, 
+```{r}
+
+```
+
+
+
 2. Prove that $f(x) = \beta_0 + \beta_1 x + \beta_2 x^2$ is *not* linear. 
