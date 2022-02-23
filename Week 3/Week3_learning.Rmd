@@ -30,6 +30,9 @@ x1 <- rbinom(2e4, size = 10, prob = 1/6)
 x2 <- dbinom(0:10, size = 10 , prob = 1/6)
 plot(x = 0:10, y = x2, type = "l")
 ```
+The two functions represent draws from a binomial distribution. The first one samples 10 draws 2e4 times and returns the hit count for each draw, thus ending up with 2e4 hitcount. The dbinom does NOT sample but returns the probability distributions for x numbers of hits in a 10-draw sample. It thus calculates and does not sample. Because of the probability being 1/6 it makes sense, that the highest probability of x hits is x=2 (10/6 ~ 2) 
+
+
 ### Difference between two distributions. 
 treatment A has a E(X) = 10 with sd = 1.5
 treatment B has a E(X) = 5 with sd = 2
@@ -40,13 +43,27 @@ estimate the difference in effect between the two distributions.
   2. Estimate the uncertainty surrounding the point estimate difference.
 
 ```{r}
+a_mean <- 10
+a_sd<-1.5
+b_mean<-5
+b_sd<-2
+
+
+## 1 - The point estimate difference
+diff_est<-abs(a_mean-b_mean)
+## 2 - The uncertanty as summed standard deviation
+uncer_est<-sqrt(a_sd^2+b_sd^2)
 
 ```
+
+
 
 *Bonus: (hard)*
 How would the formula for the uncertainty estimate differ if we said that treatment A and B has a correlation coefficient of 0.6? 
   1. Describe in your own words how it would affect the difference between the two estimates. 
   2. Use the formula for differences between dependend variables to calculate a new estimate of uncertainity. 
+  
+  
 
 
 # New stuff for today. 
@@ -64,7 +81,7 @@ first element C("friday", "saturday") is our possible outcomes. and prob = c(0.8
 
 ```{r}
 #add sunday as another option and think add the proaability of sunday to the probability vector. 
-sample()
+sample(c("friday","saturday","sunday"), size = 20, replace = TRUE, prob = c(0.8,0.7,0.99))
 
 ```
 
@@ -134,7 +151,7 @@ print(n1)
 print("Fibonacci sequence:")
 print(n1)
 print(n2)
-while(count < nterms) {
+while(count < nterms+1) {
 nth = n1 + n2
 print(nth)
 # update values
@@ -148,12 +165,18 @@ count = count + 1
 The number you type in the console in saved in "nterms". Walk through the line of codes and figure out how nterms is as conditionally statements. 
 
 Question1: What happens if you get a negative number. (which line of code is responsible)
+if(nterms <= 0)
 
 Question2: What happens if you type a positive number (which lines starts the sequence with the first two numbers) 
+if(nterms == 1) {
+
 
 Question3: Which line of code stops the sequence when the desired n-terms is reached. 
+while(count < nterms)
+
 
 Question4: Make the while loop print out nterms + 1 expression of the fibnonacci sequence. 
+while(count < nterms+1
 
 
 
@@ -161,7 +184,7 @@ Question4: Make the while loop print out nterms + 1 expression of the fibnonacci
 Functions an easy way to reuse code and repeat a procedure many times. 
 
 Key things to renember: 
- 1. All variables made within a function is local variables which means you cannot use them outside of the function in the "global enviroment". 
+ 1. All variables made within a function is local variables which means you cannot use them outside of the function in the "global environment". 
  2. it is good code ethics to specify a return() statement which tells us what the final output should be of our function. If nothing is specified it will return the last statement calculated. 
  3. You can make functions with and without variables. f(x) is a function of x. f() is a function of nothing but it will still do the computations that you have specified. can be used to avoid a cluster of varaibles in the global enviroment.
  4. Be explicit in your functions variable names. 
@@ -171,13 +194,13 @@ Key things to renember:
 Make a random function that returns the largest sum of two numbers.  
 ```{r}
 test_function <- function(n1,n2,n3){
-  if (n1 + n2 > n3){
     largest_sum <- paste("n1+ n2 =", n1 + n2)
-  }
-  if (n2 + n3 > n1){
+    ls<-n1+n2
+  if (n2 + n3 > ls){
     largest_sum <- paste("n2+ n3 =", n2 + n3)
+    ls<-n2+n3
   }
-  if (n1 + n3 > n2){
+  if (n1 + n3 > ls){
     largest_sum <- paste("n1+ n3 =", n1 + n3) 
     
   }
@@ -187,8 +210,11 @@ test_function <- function(n1,n2,n3){
 test_function(2,5,9)
 ```
 
+There is an error in the code. It returns only the last if-statement (if it meets the conditions) instead of comparing all the values. There should be a statement to only paste the new sum if the exceeds 
 
 __Your try__: Try and make a fun function with a least some conditional statements. 
+
+We've fixed yours ;P 
 
 
 
@@ -246,3 +272,47 @@ __Following Exercises in Chapter 5:__
 5.1, 5.3, 5.4, 5.5 5.8, 5.9, 5.11, 5.12, 5.13
 
 5.2 (semi-hard), 5.6 (hard)
+
+##Exercises 5.1
+ Discrete probability simulation: Suppose that a basketball player has a 60% chance of making
+a shot, and he keeps taking shots until he misses two in a row. Also assume his shots are
+independent (so that each shot has 60% probability of success, no matter what happened before).
+(a) Write an R function to simulate this process.
+(b) Put the R function in a loop to simulate the process 1000 times. Use the simulation to estimate
+the mean and standard deviation of the total number of shots that the player will take, and plot
+a histogram representing the distribution of this random variable.
+(c) Using your simulations, make a scatterplot of the number of shots the player will take and the
+proportion of shots that are successes
+```{r}
+
+basketball<- function() {
+  n<-1
+  miss<-0
+  while(miss < 2) {
+   hit<- rbinom(1,size = 1, prob = 0.6) 
+   if(hit == 1) {
+     #hit
+     n = n+1
+     miss = 0
+   }
+   else {
+     #miss
+     n=n+1
+     miss=miss+1
+   }
+  }
+    return(n)
+}
+
+samp_dist_of_samp_means_basket <- c()
+for (i in 1:1000){
+  samp_dist_of_samp_means_basket[i] <- mean(basketball())
+}
+hist(samp_dist_of_samp_means_basket)
+
+
+x3 <- dbinom(0:30, size = 30 , prob = 0.6)
+plot(x = 0:30, y = x3, type = "l")
+
+```
+

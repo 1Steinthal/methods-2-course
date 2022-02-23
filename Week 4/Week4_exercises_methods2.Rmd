@@ -22,6 +22,7 @@ If we wanna write math notation in markdowns we can make use of something called
 In R you can start a latex notation by using $. In the same way that you can start a R chunk with 
 
 ```{r setup, include=FALSE}
+pacman::p_load(tidyverse)
 
 ```
 
@@ -39,29 +40,29 @@ It only changes how the code is presented in the markdown.
 ### Lets get started with some exercises. 
 
 $$  \sum x_i >> \sum y_i,   $$
-__answer:__
+__answer:__ The sum of all the elements of the list x, is much greater than the sum of all the elements of list y
 
 $$ X \in \mathbb{R}^+ $$
-__answer:__
+__answer:__ X (the list) is elements of the set of positive real numbers. This means that all elements of list X, is positive real numbers
 
 $$ Y \in \mathbb{I^}^+$$
-__answer:__
+__answer:__ The same as above apart from the list Y only containing positive integers
 
 $$ x \in \mathbb{R}^+ \therefore x \notin \mathbb{R}^- $$
-__answer:__
+__answer:__ Because we know x to be a positive real number, then it cannot be a negative real number
 
 $$ y > x \therefore x - y \in \mathbb{R}^-$$
-__answer:__
+__answer:__ We are presented with the statement of y being greater than x and this implies that the differens between x and y is a negative number. 
 
 $$ x \in \mathbb{I}^-  y \in \mathbb{I}^+ \therefore x + y  \in \mathbb{I} $$
 
-__answer:__
+__answer:__ We know that x is a negative integer and that y is a positive integer and therefor the sum of x and y is an integer
 
 $$ x \varpropto y \because x = c \cdot y  $$
-__answer:__
+__answer:__ x is proportional to y because the product of y and a constant will always yield x
 
 $$ x \in \mathbb{I} \ and  \ x \notin \mathbb{I}^- \Rightarrow x \in \mathbb{I}^+ $$ 
-__answer:__
+__answer:__ x is an integer and x is not a negative integer, this implies (logically) that x must be a positive integer
 
 
 ### Part 2
@@ -75,29 +76,29 @@ and https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 Let x be the any number of postive integers and y be any negative integer. Therefore the product 
 of x and y must be a negative integer. 
 __answer:__
-$$ $$
+$$ x \in \mathbb{I}^+ \ and \ y \in \mathbb{I}^- \therefore x \cdot y \in \mathbb{I}^-$$
 
 
 x is equal to 0 and a exist in the positive real numbers therefore a to the power of x is equal to 1. 
 __answer:__
-$$ $$
+$$ x = 0 \ and \ a \in \mathbb{I}^+ \therefore a^x=1 $$
 
 
-The mean of y_hat is equal to the sum of of all y_i divded by the length of y_i which is an approximate of the mean of y.   
+The mean of y_hat is equal to the sum of of all y_i divided by the length of Y which is an approximate of the mean of y.   
 __answer:__
-$$ $$
+$$ \hat{y} = \sum{y_i}\div \| \mathbf{Y} \| \approx \bar{y} $$
 
 
 x is proportional to y iff (if and only if) x = y * c
 __answer:__
-$$ $$
+$$ x \propto y \iff x=y\cdot c $$
 
 
 
 **Make up your own example.**
 Make up a few of your own examples where you generate both the plain English and the math notation. 
-
-
+$$ x = y = z \iff x-y = 0 \ and \ y-z=0 $$
+x is equivalent to y which is equivalent to z iff the differenz of x and y is 0 and the differenz of y and z is 0
 
 We will walk through some of these examples together. Continue with exercises from the book. 
 # Nested functions
@@ -107,20 +108,53 @@ We will walk through some of these examples together. Continue with exercises fr
 let x be a set {0,2,3,10,8,4,11}
 let y be a set {1,3,10,4,20,11}
 
+```{r}
+X <- c(0,2,3,10,8,4,11)
+Y <- c(1,3,10,4,20,11)
+
+```
+
+
 Find the following set z for each expression. 
 
   1)
+```{r}
+Z1 <- c(X,Y)
+Z1
+```
+  
 $$ z = x \cup y  $$
   2)
+```{r}
+Z2 <- intersect(X,Y)
+  
+Z2
+
+```
+  
 $$ z =x \cap y $$
 
   3)
+```{r}
+Z3 <- setdiff(X,Y)
+Z3
+```
+  
 $$z = x \setminus y $$
 
   4) 
+```{r}
+z4<-max(X)
+```
+  
 $$max(x) $$
 
   5)
+```{r}
+z5<- max(c(X,Y))
+z5
+```
+  
 $$ max(x \cap y)$$
 
 
@@ -129,9 +163,16 @@ These exercises is to refresh some math fundamentals from high-school which will
 
 
 ### 1.1 
+On paper
 
 
 ### 1.4 
+
+```{r}
+plot.new()
+abline(-17.78,5/9)
+```
+
 
 ### 1.6
 

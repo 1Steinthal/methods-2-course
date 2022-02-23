@@ -143,9 +143,84 @@ m
 se
 ```
 
+##Exercise 4.2 - PROBABLY WRONG
+You are designing a survey to estimate the gender gap: the difference in
+support for a candidate among men and women. Assuming the respondents are a simple random
+sample of the voting population, how many people do you need to poll so that the standard error is less than 5 percentage points?
+
+We assume that there 
+```{r}
+si<-200
+se_m<- sqrt(0.5*0.5/si)
+se_f<- sqrt(0.5*0.5/si)
+
+s_diff<-sqrt(se_m^2+se_f^2)
+s_diff
+
+```
+
+## Exercise 4.3
+ You want to gather data to determine which of two students is a
+better basketball shooter. One of them shoots with 30% accuracy and the other is a 40% shooter.
+Each student takes 20 shots and you then compare their shooting percentages. What is the
+probability that the better shooter makes more shots in this small experiment?
+
+```{r}
+gs<-rbinom(1, size = 20, prob = 0.4)
+bs<-rbinom(1, size = 20, prob = 0.3)
+
+se_gs<-sqrt(0.4*0.6/20)
+se_bs<-sqrt(0.3*0.7/20)
+
+di<-sqrt(se_gs^2+se_bs^2)
+di
+
+dbinom()
+
+```
+
+##Exercise 4.4
+You want to gather data to determine which of two students is a
+better basketball shooter. You plan to have each student take n shots and then compare their
+shooting percentages. Roughly how large does n have to be for you to have a good chance of
+distinguishing a 30% shooter from a 40% shooter?
+```{r}
+
+```
 
 
-4.1 4.2 4.3 4.4 & 4.5 
+## Exercise 4.5
+ Sampling distribution: Download a data file on a topic of interest to you. Read the file into R
+and order the data by one of the variables.
+
+a) Use the sample function in R to draw a simple random sample of size 20 from this population.
+What is the average value of the variable of interest in your sample?
+(b) Repeat this exercise several times to get a sense of the sampling distribution of the sample
+mean for this example.
+
+```{r}
+wine<- read_csv("winequality.csv")
+
+samp<-sample(wine$alcohol, size = 20, replace = FALSE)
+mean(samp)
+
+samp_f <- function(){
+  s<- sample(wine$quality, size = 20, replace = FALSE)
+  mean(s)
+  return(s)
+}
+
+samp_f()
+
+samp_dist_of_samp_means <- c()
+for (i in 1:1000){
+  samp_dist_of_samp_means[i] <- mean(samp_f())
+}
+hist(samp_dist_of_samp_means)
+
+```
+
+
 Use the skills you learned: 
 Exercise 3.10 & 4.11
 Hard: (challenge)
