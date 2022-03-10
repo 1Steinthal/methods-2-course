@@ -151,6 +151,10 @@ pacman::p_load(tidyverse)
 df<-read_csv("winequality.csv")
 
 design <- subset(df, select=c("fixed acidity", "alcohol", "quality"))
+design<- design %>% 
+    rename(fixaci = 'fixed acidity')
+glm(quality ~fixaci, data = design)
+
 v1<-rep(1,length(design$alcohol))
 design<-cbind(v1,design)
 
@@ -159,7 +163,7 @@ design<-cbind(v1,design)
     
     2) Decide on your beta values and save it in a beta vector.  
 ```{r}
-beta<-c(0,15)
+beta<-matrix(c(6.192, -0.05187), ncol = 1)
 ```
 
 
@@ -168,19 +172,58 @@ beta<-c(0,15)
         3.2) Does something look odd? 
 
 ```{r}
+multi<- subset(design, select = c(v1,fixaci))
+multi<-data.matrix(multi)
+newmatrix<-multi %*% beta
 
-plot(lm(quality ~ alcohol, data = design))
+fixedacid<-cbind(newmatrix,design)
+fixedacid<- fixedacid %>% 
+    rename(quality_pred = newmatrix)
+
+ggplot(data = fixedacid, aes(x=fixaci, y=quality_pred))+
+    geom_line()
+
+ggplot(data = fixedacid, aes(x=fixaci, y=quality))+
+    geom_line()
+
+
+
 ```
 
         
     4) Simulate errors and add it your y vector so that it becomes yhat. 
         4.1) Plot the new y ~ x and the abline corresponding to our beta values. 
         4.2) Is this more realistic than what we observed 3.2? 
+        
+```{r}
+y_hat<-fixedacid$quality-fixedacid$quality_pred
+fixedacid<-cbind(fixedacid,y_hat)
+
+ggplot(data = fixedacid, aes(x=fixaci, y=quality_pred+y_hat))+
+    geom_line()+
+    geom_abline(intercept = beta[1,], slope = beta[2,])
+
+```
+
     
     5) Using your knowledge of matrix inversion and the general linear model find the corresponding beta values to the yhat ~ x.
         5.1) Did beta coefficinets match the ones you specified in the earlier example and               why/why not? 
+        
+```{r}
+glm(y_hat+quality_pred ~ fixaci, data = fixedacid)
+```
+
         5.2) run normal lm() on yhat ~ x. Does the beta coefficients match? 
+        
+```{r}
+lm(y_hat+quality_pred ~ fixaci, data = fixedacid)
+```
+
+
         5.3) When is it problematic to find the inverse of a matrix? How does it relate to the error message we sometimes get when running regression models: (isSingular)? 
+        
+When it doesn't fit in size. 
+I'm not sure I quite understand this exercise, but it was fun anyhow...
         
         
 
@@ -194,11 +237,46 @@ mtcars
 
 ```{r}
 
+car<-subset(mtcars, select=c(mpg, hp,wt,am))
+
+car<-car %>% 
+    mutate(x=hp+wt+am)
+int<-rep(1,length(car$x))
+car<-cbind(int,car)
+
+mpg<-subset(car, select = mpg)
+mpg<-data.matrix(mpg)
+car<-data.matrix(car)
+car<-subset(car, select = c(int, x))
+
+Beta<-t(car)%*%mpg
+Beta
 ```
 *hint:* Design Matrix, and y vector. 
 
     2) Check if the output is the same as when you use the lm() function
 
+```{r}
+cars<-subset(mtcars, select = c(mpg, hp,wt,am))
+cars<-cars %>% 
+    mutate(x=hp+wt+am)
+lm(mpg ~ hp+wt+am,data =cars)
+```
 
+
+```{r}
+
+car2<-subset(mtcars, select=c(mpg, hp,wt,am))
+
+int<-rep(1,length(car2$hp))
+car2<-cbind(int,car2)
+
+mpg<-subset(car2, select = mpg)
+mpg<-data.matrix(mpg)
+car2<-data.matrix(car2)
+
+Beta<-t(car2)%*%mpg
+Beta
+```
 
 
