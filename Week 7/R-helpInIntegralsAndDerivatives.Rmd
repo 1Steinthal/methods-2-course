@@ -1,0 +1,43 @@
+---
+title: "Opgaver"
+author: "Thomas Steinthal"
+date: "23/3/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+pacman::p_load(tidyverse)
+```
+
+```{r}
+f<-expression(1/y^2)
+D(f,'x')
+
+t<-expression(14*t-7)
+D(t,'t')
+
+f<-expression((x^2+1)*(x^3-1))
+
+f<-expression(((2*x^3-3)^2.5)/(((x^2-1)^0.66666)*((9*x^2-1)^0.5)))
+D(f,'x')
+
+g<-expression(e^y*sin(y))
+g<-D(g,'y')
+g
+
+h<-expression(log(1-y))
+h<-D(h,'y')
+h
+
+
+integrand<- function(x) {4*x^2+12*x-18}
+a<-integrate(integrand, lower = 1.099, upper = 10)
+b<-integrate(integrand, upper = 1.099, lower = -4.098)
+c<-integrate(integrand, lower = -10, upper = -4.098)
+
+a+b+c
+a<-1764.099
+b<-93.53073
+c<-636.0987
+```
+

@@ -12,11 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(rstanarm)
-library(rstan)
+pacman::p_load(rstan)
 ```
 # Classical framework
 ```{r}
-stan_g
 swagg <- rnorm(1e2, mean = 10, sd = 2) #Random x values.
 y <- rnorm(1e2, mean = swagg * rnorm(1e2, 4, sd = 3) , sd = 2) #Uncertainty to beta value mean = 4. 
 drip <- y + rnorm(1e2, mean = 0, sd = 2) #error
@@ -168,6 +167,137 @@ You can of course choose to use normal distributed predictors or sequence or wha
 
 
 
+Exercises:
+#9.2 
+Predictive simulation for linear regression: Using data of interest to you, fit a linear regression.
+Use the output from this model to simulate a predictive distribution for observations with a
+particular combination of levels of all the predictors in the regression
+
+```{r}
+wine<- read_csv("winequality.csv")
+head(wine)
+
+winemodel<- lm(quality ~ alcohol, data=wine)
+summary(winemodel)
+
+plot(density(rnorm(1e2, mean = winemodel$coefficients[2], sd = 0.008139*sqrt(length(wine$alcohol)) )), type = "l", xlab = "Beta1 Coefficient value", main = "Quality ~ Alcohol", xlim = c(-1,14))
+```
+
+```{r}
+
+bayes_model <- stan_polr(factor(quality) ~alcohol, data = wine, , prior=R2(0.3, "mean"))
+summary(bayes_model)
+```
+```{r}
+samples <- as.matrix(bayes_model)
+
+dim(samples)
+head(samples)
+
+c(median = apply(samples, 2, median))
+
+c(MAD = apply(samples, 2, mad))
+
+```
+
+```{r}
+par(mfrow = c(2,2))
+#Plot posterior distributions which is based on our samples. 
+plot(density(samples[,1]), main = "Intercept")
+
+plot(density(samples[,2]), main = "Slope")
+
+#plot(density(samples[,3]), main = "Sigma")
+```
+```{r}
+#Sigma = 32.7 that is a high residual standard deviation so lets check.
+plot(wine$quality ~ wine$alcohol)
+abline(a = bayes_model$coefficients[1], b = bayes_model$coefficients[2])
+```
+```{r}
+plot(density(bayes_model$residuals), main = "Residuals")
+mtext(paste("sd = ",sd(bayes_model$residuals), "mean =", mean(bayes_model$residuals)),side = 3, adj = 0.5, padj = .2)
+```
+```{r}
+#Define our "simulated data" which we wanna use to predict. 
+new <- data.frame(alcohol = 10)
+#Point pred
+y_pointpred_drip <- predict(bayes_model, newdata = new)
+
+y_pointpred_drip
+bayes_model$coefficients[1] + bayes_model$coefficients[2]*new$alcohol
+```
+
+```{r}
+y_linpred_drip <- posterior_linpred(bayes_model, newdata = new)
+hist(y_linpred_drip, main = "Histogram of predicted value for quality | alcohol = 10")
+```
+
+```{r}
+plot(NULL, xlim = c(-10,20), ylim= c(-100,100), main = "Different possible lines", xlab = "alcohol", ylab = "quality")
+for (i in 1:100) abline(a = samples[i,1],b = samples[i,2])
+abline(v = 2, col = "red", lwd =4)
+```
+
+
+#Exercise 9.3
+Uncertainty in the predicted expectation and the forecast: Consider the economy and voting
+example from Section 7.1. Fit the linear regression model to the data through 2012; these are
+available in the folder ElectionsEconomy. Make a forecast for the incumbent party’s share of
+the two-party vote in a future election where economic growth is 2%.
+```{r}
+hibbs <- read.table("hibbs.dat", header=TRUE)
+plot(hibbs$growth, hibbs$vote, xlab="Economic growth",
+ylab="Incumbent party's vote share")
+
+M1 <- stan_glm(vote ~ growth, data=hibbs)
+print(M1)
+summary(M1)
+```
+```{r}
+sims <- as.matrix(M1)
+
+Median <- apply(sims, 2, median)
+MAD_SD <- apply(sims, 2, mad)
+print(cbind(Median, MAD_SD))
+
+```
 
 
 
+(a) Compute the point forecast, the standard deviation of the predicted expectation from (9.1),
+and the standard deviation of the predicted value from (9.2).
+
+```{r}
+M1f<-function(x){
+  y=M1$coefficients[1]+M1$coefficients[2]*x
+  return(y)
+}
+
+M1f(2)
+
+par(mfrow = c(2,2))
+#Plot posterior distributions which is based on our samples. 
+plot(density(sims[,1]), main = "Intercept")
+
+plot(density(sims[,2]), main = "Slope")
+
+plot(density(sims[,3]), main = "Sigma")
+
+```
+```{r}
+#Define our "simulated data" which we wanna use to predict. 
+new <- data.frame(swagg = 2)
+#Point pred
+y_pointpred_drip <- predict(bayes_model, newdata = new)
+
+y_pointpred_drip
+bayes_model$coefficients[1] + bayes_model$coefficients[2]*new$swagg
+
+y_linpred_drip <- posterior_linpred(bayes_model, newdata = new)
+hist(y_linpred_drip, main = "Histogram of predicted value for drip | swag = 2")
+```
+
+
+(b) Now compute these using the relevant prediction functions discussed in Section 9.2. Check
+that you get the same values as in part (a) of this problem

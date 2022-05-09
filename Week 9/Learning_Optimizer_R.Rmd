@@ -29,7 +29,7 @@ Let us start out by showing an example of on polynomial function.
 ```{r}
 # We first define our function, in our case it is a polynomial expression. 
 polynomial <- function(x){
-  f_x <- 10*x^2 + 2*x + 30 
+  f_x <- 10*x^2 + 2*x - 300 
   return(f_x)
 }
 x_plot <- seq(-10,10, by = .05)
@@ -41,8 +41,29 @@ We that there is a minimum around $x \approx 0$.
 
 **Question:**
 - Using what we know about derivatives how would find any local maximum and minimum points?
+We know that one can find the local minimum by finding the x value in which f'(x)=0
+
+```{r}
+f<-expression(10*x^2+2*x+30) #f'(x)=20*x+2 , f''(x)=20
+f_prime<-D(f,'x')
+
+solve(f_prime,)
+
+solve(polynomial,c(0))
+
+fz<-function(x){
+  10*x^2+2*x-300
+}
+v<-c(-300,2,10)
+v<-c(2,20)
+
+polyroot(v)
+
+```
 
 - When having found an extremum how can you be sure it is a min or max? (think higher order derivatives.) 
+Take the double derivative to see whether it is positive or negative. (negative means max, positive means minimum)
+
 
 
 After having answered let us look at how we can do this operation in R. 
@@ -169,16 +190,99 @@ Now it is time for you to get your hands dirty with the optim() function.
 ## Exercises
 
 1) Choose a mathematical function with 4 minimums in the definition set you have chosen. 
+```{r}
+f<-function(x){
+  f_x<-cos(x)
+  return(f_x)
+}
+```
+
+
   a) Hard code the functiom into R and plot it.
+```{r}
+x_plot <- seq(-10,10, by = .05)
+
+#plot the function as a line (type = "l"). 
+plot(x_plot, f(x_plot), type = "l")
+```
+  
   b) Find the 4 minimums using the optim() function. 
+```{r}
+optim(1, fn = f, method= "Brent", lower = -10, upper = 10)
+x = -10
+repeat{
+  print(paste("for x = ", x," the closest minimum is at x =",optim(x, f, method = "CG")$par))
+  x = x +1
+  if (x > 10) break("X limit reached")
+}
+```
+  
+  
   c) Check if the they are indeed minimums using the second derivative rule we learned last class. 
+  
+```{r}
+f_dp<-function(x){
+  f_x<- -cos(x)
+  return (f_x)
+}
+f_dp(3.1415926)
+f_dp(9.4247779)
+f_dp(0)
+f_dp(5)
+```
+
   d) Find the maximums or in other words, find the x's with maximises f(x). (Hint: Optim() always minimizes the return() so maybe switch the sign? How can max become min? )
+```{r}
+x = -10
+fungi<-function(x){
+  f_x <- -cos(x)
+  return(f_x)
+}
+repeat{
+  print(paste("for x = ", x," the closest maximum is at x =",optim(x, fungi, method = "CG")$par))
+  x = x +1
+  if (x > 10) break("X limit reached")
+}
+```
+  
   
 2) Using the above introduction to the linear regression using optim().
-  a) Create Nx5 design matrix with the intercept and 4 different predictors. 
+  a) Create Nx5 design matrix with the intercept and 4 different predictors.
+  x1<-c(1,b_1,b_2,b_3,b_4)
+```{r}
+set.seed(101) #random seed to reproduce results
+n <- 5
+x <- rnorm(n, 20, 2) # so this is 1e2x1 predictor matrix 
+```
+  
+  
+  
   b) Simulate y depended on the design matrix. (Hint: Make y dependend on all the different predictors.) don't forget to add some error. 
+```{r}
+y <- rnorm(n, mean = x *2, sd  =1 )                   # this is our outcome variable, a 1e2x1 vector
+
+X_matrix <- cbind(rep(1, 5), x)      # adding a column of 1s as intercept to the design matrix X (1e2 x 1)
+theta <- rep(0,2)               # set up the initial theta 2 x 1 vector
+
+```
+  
   c) Create a loss function which we want to minimze (I would suggest RSS or MSE to start with.) 
+```{r}
+loss_function <-function(X, y, par){  
+  n <- length(y)
+  loss <- sum((X%*%par - y)^2)/(n-length(par))
+return(loss) 
+}
+
+```
+  
+  
   d) Use optim() to find the beta coefficients which minimizes our cost function. 
+```{r}
+coef <- optim(par = theta, fn = loss_function , X = X_matrix, y = y, method = "BFGS")
+coef$par
+```
+  
   
 
 3) It is time to start getting creative. 
